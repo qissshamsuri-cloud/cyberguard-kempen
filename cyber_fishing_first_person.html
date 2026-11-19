@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CYBER FISHING — First Person Challenge</title>
+<style>
+:root{--cyan:#63f4ff;--blue:#0b3d68;--deep:#020817;--gold:#ffd56b;--pink:#ff4f91}
+*{box-sizing:border-box}body{margin:0;background:#020817;color:#eafaff;font-family:Arial,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px 5%;background:#04172c;border-bottom:1px solid #1a7da3;position:relative;z-index:5}
+.brand{font-weight:900;letter-spacing:3px;color:var(--cyan)}.brand small{display:block;font-size:10px;color:#ffcf67;letter-spacing:2px;margin-top:4px}
+.pill{border:1px solid #2c9fc1;background:#092b49;color:#bdfaff;padding:8px 13px;border-radius:30px;font-weight:bold}
+main{max-width:1150px;margin:22px auto;padding:0 16px}
+.hero{text-align:center;margin:15px 0 18px}.hero h1{font-size:clamp(25px,5vw,48px);margin:0;color:white;text-shadow:0 0 22px #00d9ff;letter-spacing:2px}.hero p{color:#a8d5e8;margin:9px 0}
+.gamebox{position:relative;border:2px solid #177da6;border-radius:22px;overflow:hidden;box-shadow:0 0 40px #00bde833;background:#06162a}
+canvas{display:block;width:100%;height:auto;aspect-ratio:16/9;background:#061b33}
+.hud{position:absolute;inset:14px 16px auto;display:flex;gap:9px;justify-content:space-between;pointer-events:none;flex-wrap:wrap}
+.stat{background:#03162bd9;border:1px solid #35d9f0aa;border-radius:12px;padding:8px 12px;min-width:95px;backdrop-filter:blur(6px)}
+.stat small{display:block;color:#8ddff0;font-size:10px;letter-spacing:1px}.stat b{font-size:20px;color:white}
+.center-msg{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);width:min(86%,540px);text-align:center;padding:20px;border-radius:18px;background:#03172beF;border:1px solid #55eaff;box-shadow:0 0 35px #00d9ff55}
+.center-msg h2{margin:0 0 9px;color:var(--cyan);font-size:clamp(20px,4vw,32px)}.center-msg p{line-height:1.5;color:#d4edf6}
+.btn{border:0;border-radius:12px;padding:13px 20px;font-weight:900;letter-spacing:1px;cursor:pointer;background:linear-gradient(100deg,#00d9ef,#1a8de0);color:#031427;box-shadow:0 5px 0 #07527c;margin:5px}
+.btn.alt{background:#ffcf63;color:#2b1a00;box-shadow:0 5px 0 #956019}.btn:active{transform:translateY(3px);box-shadow:none}
+.bottom{display:grid;grid-template-columns:1.2fr .8fr;gap:14px;margin-top:14px}
+.panel{background:#071e37;border:1px solid #17648a;border-radius:16px;padding:15px}.panel h3{margin:0 0 10px;color:var(--cyan);font-size:14px;letter-spacing:1px}
+.meter{height:13px;border-radius:30px;background:#163b55;overflow:hidden;border:1px solid #36758d}.fill{height:100%;width:0;background:linear-gradient(90deg,#20e5b5,#ffd15c,#ff527d);transition:width .08s}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}.hint{font-size:12px;color:#a9cddd;line-height:1.55}.danger{color:#ff9aaf}.sound{cursor:pointer}
+.quiz{position:absolute;z-index:4;inset:0;background:#010a17ed;display:none;align-items:center;justify-content:center;padding:18px}
+.quizcard{max-width:610px;width:100%;padding:24px;border-radius:20px;border:1px solid var(--gold);background:linear-gradient(145deg,#0b2c4d,#061326);box-shadow:0 0 50px #ffbc3c33}
+.quizcard h2{color:var(--gold);margin-top:0}.answers{display:grid;gap:9px}.answers button{text-align:left;background:#0b4165;border:1px solid #2586a6;color:white;border-radius:10px;padding:12px;cursor:pointer;font-weight:bold}.answers button:hover{background:#12618a}
+footer{text-align:center;color:#5c8ca6;font-size:11px;padding:20px}
+@media(max-width:700px){.bottom{grid-template-columns:1fr}.stat{min-width:75px;padding:6px 8px}.stat b{font-size:16px}.hud{inset:8px 8px auto}.center-msg{top:52%}}
+</style></head>
+<body>
+<header class="top"><div class="brand">CYBER FISHING<small>STAY SMART • STAY SAFE</small></div><div class="pill">⚡ FIRST-PERSON MODE</div><button class="pill sound" id="soundBtn">🔊 AUDIO ON</button></header>
+<main>
+<section class="hero"><h1>THE DEEP NET: CYBER FISHING</h1><p>Masuk ke POV pemancing. Tunggu tarikan, kawal tali dan buru tangkapan digital!</p></section>
+<section class="gamebox">
+<canvas id="scene" width="1280" height="720" aria-label="Paparan pandangan orang pertama ketika memancing"></canvas>
+<div class="hud">
+ <div class="stat"><small>SKOR</small><b id="score">0000</b></div><div class="stat"><small>TANGKAPAN</small><b id="caught">0</b></div><div class="stat"><small>MASA</small><b id="time">90</b></div><div class="stat"><small>STREAK</small><b id="streak">x0</b></div>
+</div>
+<div class="center-msg" id="intro"><h2>READY, ANGLER?</h2><p>Anda berada di hujung jeti. Lihat air dari mata pemancing sendiri. Apabila pelampung tenggelam, tekan dan tahan <b>REEL IN</b> mengikut rentak untuk mengawal ketegangan tali. Terlalu tegang, tali putus!</p><button class="btn" id="startBtn">▶ START THE EXPEDITION</button></div>
+<div class="center-msg" id="end" style="display:none"><h2>EXPEDITION COMPLETE</h2><p id="endText"></p><button class="btn" id="againBtn">↻ PLAY AGAIN</button></div>
+<div class="quiz" id="quiz"><div class="quizcard"><h2>🎣 TANGKAPAN DIGITAL!</h2><p id="question"></p><div class="answers" id="answers"></div><p class="hint" id="feedback"></p></div></div>
+</section>
+<div class="bottom">
+ <div class="panel"><h3>LINE TENSION / KETEGANGAN TALI</h3><div class="meter"><div class="fill" id="tension"></div></div><div class="controls"><button class="btn" id="reelBtn">🎣 REEL IN</button><button class="btn alt" id="castBtn" disabled>↗ CAST LINE</button></div><p class="hint" id="status">Tekan START untuk memulakan ekspedisi. Gunakan butang REEL IN apabila ikan menyambar.</p></div>
+ <div class="panel"><h3>ANGLER INTEL</h3><p class="hint">🎧 Audio suspense akan meningkat apabila ikan menghampiri umpan.<br>🌊 Perhatikan pelampung dan percikan air.<br>⚠️ Tekan dan tahan REEL IN secara berkala — jangan biarkan meter merah terlalu lama.<br>🧠 Setiap tangkapan membuka soalan keselamatan siber.</p></div>
+</div>
+</main><footer>CYBERGUARD • GAME ZONE • Audio dijana dalam pelayar — tekan butang audio untuk mute/unmute.</footer>
+<script>
+(()=>{
+const canvas=document.getElementById('scene'),ctx=canvas.getContext('2d');
+const $=id=>document.getElementById(id);
+let audio=null,master=null,osc=null,heartbeat=null,sound=true,running=false,phase='idle',score=0,caught=0,streak=0,time=90,tension=12,bite=0,fishX=0,fishY=0,castAt=0,last=0,raf=0,quizIndex=0,particles=[];
+const questions=[
+{q:"Anda menerima SMS bank dengan pautan untuk mengesahkan akaun. Apakah tindakan paling selamat?",a:["Klik pautan dengan segera","Jangan klik; semak melalui aplikasi/laman rasmi bank","Balas SMS dengan nombor kad"],c:1,why:"Betul! Gunakan saluran rasmi dan jangan klik pautan mencurigakan."},
+{q:"Apakah maksud phishing?",a:["Memancing di laut","Cubaan memperdaya mangsa untuk mendapatkan maklumat sulit","Perisian untuk mengemas kini telefon"],c:1,why:"Tepat! Phishing menyamar sebagai pihak dipercayai untuk mencuri maklumat."},
+{q:"Kata laluan yang manakah lebih selamat?",a:["12345678","Nama sendiri dan tarikh lahir","Frasa laluan unik yang panjang dan sukar diteka"],c:2,why:"Bagus! Gunakan kata laluan unik dan aktifkan pengesahan berbilang faktor."},
+{q:"Jika akaun media sosial menghantar mesej meminta wang secara tiba-tiba, anda patut…",a:["Sahkan identiti melalui panggilan lain","Terus pindahkan wang","Kongsi OTP untuk pengesahan"],c:0,why:"Betul! Sahkan melalui saluran lain sebelum bertindak."},
+{q:"Apakah tindakan sesuai jika anda menjadi mangsa penipuan kewangan?",a:["Padam semua mesej","Hubungi bank dan NSRC 997 dengan segera","Tunggu beberapa hari"],c:1,why:"Tindakan pantas membantu pihak berkaitan mengambil langkah seterusnya."}
+];
+function initAudio(){if(audio)return;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audio=new AC();master=audio.createGain();master.gain.value=sound?.45:0;master.connect(audio.destination)}
+function tone(f,d,type='sine',vol=.12,slide=0){if(!audio||!sound)return;let o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,f+slide),audio.currentTime+d);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+d);o.connect(g);g.connect(master);o.start();o.stop(audio.currentTime+d)}
+function splash(){tone(180,.18,'sawtooth',.13,-80);setTimeout(()=>tone(95,.28,'sine',.1,-40),70)}
+function suspense(on){if(!audio||!sound)return;if(on&&!osc){osc=audio.createOscillator();let g=audio.createGain();osc.type='sine';osc.frequency.value=48;g.gain.value=.0001;osc.connect(g);g.connect(master);osc.start();g.gain.setTargetAtTime(.055,audio.currentTime,.35);heartbeat=g}else if(!on&&osc){heartbeat.gain.setTargetAtTime(.0001,audio.currentTime,.15);let old=osc;setTimeout(()=>{try{old.stop()}catch(e){}},700);osc=null;heartbeat=null}}
+function draw(){
+ const w=canvas.width,h=canvas.height,t=Date.now()/1000;
+ let sky=ctx.createLinearGradient(0,0,0,350);sky.addColorStop(0,'#020817');sky.addColorStop(.65,'#0a3153');sky.addColorStop(1,'#0d5470');ctx.fillStyle=sky;ctx.fillRect(0,0,w,350);
+ // distant cyber skyline
+ for(let i=0;i<18;i++){let x=i*78-15,hh=50+(i*37%115);ctx.fillStyle=i%2?'#08243c':'#0a2c48';ctx.fillRect(x,280-hh,50,hh);for(let y=290-hh;y<270;y+=17)for(let xx=x+8;xx<x+45;xx+=15){ctx.fillStyle='#21d7ef55';ctx.fillRect(xx,y,5,6)}}
+ let water=ctx.createLinearGradient(0,330,0,h);water.addColorStop(0,'#08728a');water.addColorStop(.35,'#06405f');water.addColorStop(1,'#020e24');ctx.fillStyle=water;ctx.fillRect(0,330,w,390);
+ for(let j=0;j<12;j++){let y=355+j*30;ctx.beginPath();ctx.strokeStyle=`rgba(76,226,245,${.15+j*.012})`;ctx.lineWidth=2;for(let x=0;x<w;x+=12){let yy=y+Math.sin(x*.018+t*1.6+j)*5; if(x===0)ctx.moveTo(x,yy);else ctx.lineTo(x,yy)}ctx.stroke()}
+ // moon and reflections
+ ctx.fillStyle='#a9f7ff';ctx.globalAlpha=.75;ctx.beginPath();ctx.arc(1040,115,42,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+ for(let i=0;i<24;i++){let x=1000+(i*31)%170,y=330+((i*57+Math.floor(t*24))%260);ctx.fillStyle='#70f6ff55';ctx.fillRect(x,y,2+(i%3),12+(i%4)*5)}
+ // jetty edges
+ ctx.fillStyle='#101f35';ctx.beginPath();ctx.moveTo(0,720);ctx.lineTo(0,540);ctx.lineTo(340,420);ctx.lineTo(940,420);ctx.lineTo(1280,540);ctx.lineTo(1280,720);ctx.fill();
+ ctx.strokeStyle='#1e5972';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(0,540);ctx.lineTo(340,420);ctx.lineTo(940,420);ctx.lineTo(1280,540);ctx.stroke();
+ // hands and rod in first-person
+ ctx.save();ctx.translate(0,0);
+ ctx.strokeStyle='#171b2c';ctx.lineWidth=22;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(1110,680);ctx.quadraticCurveTo(1030,480,890,320);ctx.stroke();
+ ctx.strokeStyle='#38dff2';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(1110,680);ctx.quadraticCurveTo(1030,480,890,320);ctx.stroke();
+ ctx.strokeStyle='#b6eaff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(890,320);ctx.quadraticCurveTo(750,350,fishX||700,430);ctx.stroke();
+ // hands
+ ctx.fillStyle='#b97858';ctx.beginPath();ctx.ellipse(1060,642,62,43,-.5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#243f68';ctx.beginPath();ctx.ellipse(1090,615,47,28,-.5,0,Math.PI*2);ctx.fill();
+ // reel
+ ctx.strokeStyle='#9defff';ctx.lineWidth=7;ctx.beginPath();ctx.arc(1045,585,37,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#153c5c';ctx.fillRect(1000,580,90,12);
+ ctx.restore();
+ // bobber
+ let bx=fishX||690,by=phase==='bite'?430+Math.sin(t*18)*18:445+Math.sin(t*2)*4;
+ if(phase==='bite'){ctx.save();ctx.shadowColor='#ff477c';ctx.shadowBlur=30}
+ ctx.fillStyle='#ff557e';ctx.beginPath();ctx.ellipse(bx,by,13,24,0,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle='#f4faff';ctx.beginPath();ctx.ellipse(bx,by,13,12,0,0,Math.PI);ctx.fill();ctx.restore?.();
+ if(phase==='bite'){ctx.strokeStyle='#ff5e8c';ctx.lineWidth=4;ctx.beginPath();ctx.arc(bx,by+20,40+Math.sin(t*10)*12,0,Math.PI*2);ctx.stroke()}
+ // suspense vignette
+ if(phase==='bite'||phase==='reel'){let a=.08+Math.sin(t*8)*.04;ctx.fillStyle=`rgba(255,30,85,${a})`;ctx.fillRect(0,0,w,h)}
+ // particles
+ for(let i=0;i<8;i++){let x=(i*171+Math.floor(t*20)%1280)%1280,y=360+(i*53%300);ctx.fillStyle='#a2faff77';ctx.beginPath();ctx.arc(x,y,2,0,7);ctx.fill()}
+ if(phase==='idle'){ctx.fillStyle='#c8f6ff';ctx.font='bold 25px Arial';ctx.fillText('NIGHT FISHING • CYBER DOCK 07',40,65)}
+}
+function loop(ts){if(!running)return;let dt=Math.min(.05,(ts-last)/1000||.016);last=ts;time-=dt;if(time<=0){finish();return}
+ if(phase==='waiting'){if(Date.now()-castAt>3000+Math.random()*5000){phase='bite';bite=0;fishX=620+Math.random()*180;suspense(true);tone(900,.1,'triangle',.12);$('status').textContent='⚠️ ADA TARIKAN! PELAMPUNG BERGERAK! TEKAN REEL IN!';}}
+ if(phase==='bite'){bite+=dt;if(bite>5){phase='waiting';suspense(false);$('status').textContent='Ikan terlepas! Cuba lagi — perhatikan pelampung.';streak=0;updateHud()}}
+ if(phase==='reel'){tension+=dt*10;if(tension>100){phase='waiting';tension=20;streak=0;suspense(false);tone(100,.5,'sawtooth',.18,-70);$('status').textContent='💥 TALI TERLALU TEGANG! Ikan terlepas. Cuba lagi.'}}
+ $('tension').style.width=Math.min(100,tension)+'%';draw();updateHud();raf=requestAnimationFrame(loop)}
+function updateHud(){$('score').textContent=String(score).padStart(4,'0');$('caught').textContent=caught;$('time').textContent=Math.ceil(time);$('streak').textContent='x'+streak}
+function start(){initAudio();if(audio?.state==='suspended')audio.resume();tone(320,.2,'triangle',.15,450);running=true;phase='waiting';score=0;caught=0;streak=0;time=90;tension=15;castAt=Date.now();$('intro').style.display='none';$('end').style.display='none';$('status').textContent='Tali dilontar… tunggu pelampung bergerak. Dengar bunyi amaran!';$('castBtn').disabled=true;last=performance.now();cancelAnimationFrame(raf);loop(last)}
+function cast(){if(!running||phase!=='waiting')return;phase='waiting';castAt=Date.now();splash();$('status').textContent='Umpan dilontar semula. Fokus pada pelampung…'}
+function reelDown(){if(!running||phase!=='bite'&&phase!=='reel')return;if(phase==='bite'){phase='reel';$('status').textContent='TARIK! Lepaskan seketika jika meter menghampiri merah!'}tension=Math.max(0,tension-9);tone(260+Math.random()*100,.08,'square',.05);if(bite>1.1&&bite<4.5&&tension<82){phase='caught';suspense(false);caught++;streak++;score+=100+streak*25;phase='quiz';$('quiz').style.display='flex';showQuiz();splash();}}
+function showQuiz(){let q=questions[quizIndex%questions.length];quizIndex++;$('question').textContent=q.q;$('answers').innerHTML='';$('feedback').textContent='Pilih jawapan yang paling tepat untuk mengesahkan tangkapan anda.';q.a.forEach((a,i)=>{let b=document.createElement('button');b.textContent='ABC'[i]+'. '+a;b.onclick=()=>{if(i===q.c){score+=150;$('feedback').textContent='✅ '+q.why;tone(650,.12,'sine',.15,400)}else{$('feedback').textContent='❌ Belum tepat. '+q.why;streak=0;tone(160,.25,'sawtooth',.1,-70)}updateHud();setTimeout(()=>{$('quiz').style.display='none';phase='waiting';tension=15;castAt=Date.now();$('status').textContent='Tangkapan direkodkan! Bersedia untuk lontaran seterusnya.'},1700)};$('answers').appendChild(b)})}
+function finish(){running=false;phase='end';suspense(false);$('end').style.display='block';$('endText').textContent=`Skor akhir: ${score} • Tangkapan: ${caught}. ${caught>=4?'Hebat, angler! Anda menguasai cabaran malam ini.':'Ekspedisi tamat! Cuba lagi untuk tingkatkan tangkapan dan skor.'}`;$('status').textContent='Ekspedisi tamat. Tekan PLAY AGAIN untuk mencuba semula.'}
+$('startBtn').onclick=start;$('againBtn').onclick=start;$('castBtn').onclick=cast;
+$('reelBtn').addEventListener('pointerdown',e=>{e.preventDefault();reelDown()});
+$('reelBtn').addEventListener('keydown',e=>{if(e.code==='Space'||e.code==='Enter')reelDown()});
+$('soundBtn').onclick=()=>{initAudio();sound=!sound;if(master)master.gain.setTargetAtTime(sound?.45:0,audio.currentTime,.04);$('soundBtn').textContent=sound?'🔊 AUDIO ON':'🔇 AUDIO OFF';if(!sound)suspense(false);else tone(500,.12,'sine',.1,250)};
+window.addEventListener('keydown',e=>{if(e.code==='Space'&&running){e.preventDefault();reelDown()}});
+draw();updateHud();
+})();
+</script></body></html>
